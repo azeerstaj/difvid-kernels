@@ -1,7 +1,6 @@
-import os
 import torch
 from torch.utils.cpp_extension import load_inline
-import numpy as np
+torch.manual_seed(0)
 
 # Read CUDA kernel from file
 def read_cuda_kernel(filename):
@@ -32,17 +31,23 @@ sinu_posemb_forward = load_inline(
 )
 
 
-# Example usage
 if __name__ == "__main__":
 
-    batch_size = 8
+    batch_size = 16
     dim = 256
 
-    t = torch.randn([batch_size]).cuda()
+    # t = torch.randn([batch_size]).cuda()
+    # torch.save(t, 'sinu_emb_calib_input.pt')
+
+    t = torch.load('sinu_emb_calib_input.pt').cuda()
     
     # Generate anchors using CUDA
     posembs_cuda = sinu_posemb_forward.sinu_posemb_cuda(
         t, dim
     )
+
+    torch.save(posembs_cuda, 'sinu_emb_calib_output.pt')
     
-    print(f"Generated {posembs_cuda.shape}")
+    print(f"Input   [:5]: {t.view(-1)[:5]}")
+    print(f"Output  [:5]: {posembs_cuda.view(-1)[:5]}")
+    print(f"Output [-5:]: {posembs_cuda.view(-1)[-5:]}")
