@@ -1,6 +1,6 @@
 import torch
 
-a = torch.load('sinu_emb_calib_output.pt')
+a = torch.load('gelu_output.pt')
 b = torch.load('groundtruth.pt')
 
 # Check if tensors have the same shape

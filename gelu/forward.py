@@ -32,11 +32,11 @@ gelu_forward = load_inline(
 
 if __name__ == "__main__":
 
-    n_elements = 10
+    n_elements = 2 ** 8  # Number of elements in the tensor
 
-    # x = torch.randn([n_elements]).cuda()
+    x = torch.randn([n_elements, n_elements]).cuda()
     # x = torch.arange(n_elements, dtype=torch.float32).cuda()
-    x = torch.arange(n_elements, dtype=torch.float32).cuda() + torch.randn([n_elements]).cuda()
+    # x = torch.arange(n_elements, dtype=torch.float32).cuda() + torch.randn([n_elements]).cuda()
 
     torch.save(x, 'gelu_input.pt')
 
@@ -44,9 +44,10 @@ if __name__ == "__main__":
     
     # Generate anchors using CUDA
     out = gelu_forward.gelu_cuda(x)
-    gt = torch.nn.functional.gelu(x)
+    gt = torch.nn.functional.gelu(x, approximate='tanh')
 
     torch.save(out, 'gelu_output.pt')
+    torch.save(out, 'groundtruth.pt')
     
     print(f"Input   [:5]: {x.view(-1)[:5]}")
     print(f"Input  [-5:]: {x.view(-1)[-5:]}")

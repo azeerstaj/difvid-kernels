@@ -9,7 +9,7 @@
 #include <cmath>
 
 #define CONST_ 0.044715
-#define SQRT_2_OVER_PI 0.797884
+#define SQRT_2_OVER_PI 0.797884560803
 
 int ceildiv(int a, int b) {
     return (a + b - 1) / b;
@@ -23,7 +23,7 @@ __global__ void gelu_kernel(
     unsigned int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if(idx < n){
         float val = x[idx];
-        y[idx] = 0.5 * val * (1 + tanhf(SQRT_2_OVER_PI * (val + CONST_ + val * val * val)));
+        y[idx] = 0.5 * val * (1 + tanhf(SQRT_2_OVER_PI * (val + CONST_ * val * val * val)));
     }
 }
 
