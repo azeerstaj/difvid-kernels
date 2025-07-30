@@ -9,8 +9,6 @@ int ceildiv(int a, int b) {
     return (a + b - 1) / b;
 }
 
-// TODO: Indices and ranges must be unsigned ints.
-
 __global__ void sinu_posemb_kernel(
     const float* t,        // Shape: (B)
     float* sin_out,        // Shape: (B, dim/2)
