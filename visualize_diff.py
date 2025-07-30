@@ -41,7 +41,7 @@ def visualize_diff(a, b):
     # Plot with dynamic scaling
     plt.imshow(diff_np, cmap='gray', vmin=diff_min, vmax=diff_max)
     cbar = plt.colorbar()
-    # cbar.set_label(f'Absolute Difference\nMin={diff_min:.2f}, Max={diff_max:.2f}')
+    cbar.set_label(f'Absolute Difference\nMin={diff_min:.2f}, Max={diff_max:.2f}')
     # plt.title("Visualized Differences")
     plt.axis('off')
     plt.show()
