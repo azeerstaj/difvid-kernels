@@ -1,37 +1,46 @@
 import torch
 import argparse
 
-# Check if tensors have the same shape
-def compare_tensors(a, b):
+def compare_tensors(a, b, top_k=100):
     if a.shape != b.shape:
         print(f"Tensors have different shapes: {a.shape} vs {b.shape}")
         print("Cannot compare element-wise")
         return
 
-    # Find elements that are different
     diff_mask = a != b
-    
+
     if not diff_mask.any():
         print("Tensors are identical")
+        print("a:", a.view(-1)[:5])
+        print("b:", b.view(-1)[:5])
+        print("-" * 20)
+        print("a:", a.view(-1)[-5:])
+        print("b:", b.view(-1)[-5:])
         return
-    
-    # Find all different elements
+
     diff_indices = torch.nonzero(diff_mask, as_tuple=False)
-    
-    # Limit to maximum 5 elements
-    max_elements = min(5, len(diff_indices))
-    
-    print(f"Found {len(diff_indices)} different elements. Showing first {max_elements}:")
+
+    # Compute absolute differences
+    abs_diffs = torch.abs(a[diff_mask] - b[diff_mask])
+
+    # Get top-k differences
+    topk_values, topk_indices = torch.topk(abs_diffs, min(top_k, len(abs_diffs)))
+
+    print(f"Found {len(diff_indices)} different elements. Showing top {len(topk_values)} by absolute difference:")
     print("-" * 60)
-    
-    for i in range(max_elements):
-        idx = diff_indices[i]
-        idx_tuple = tuple(idx.tolist())
-        
-        print(f"Element {i+1} at index {idx_tuple}:")
-        print(f"  a[{idx_tuple}] = {a[idx_tuple]}")
-        print(f"  b[{idx_tuple}] = {b[idx_tuple]}")
-        print(f"  Difference: {a[idx_tuple] - b[idx_tuple]}")
+
+    for i in range(len(topk_values)):
+        flat_idx = topk_indices[i]
+        tensor_idx = tuple(diff_indices[flat_idx].tolist())
+
+        a_val = a[tensor_idx]
+        b_val = b[tensor_idx]
+        diff = a_val - b_val
+
+        print(f"Element {i+1} at index {tensor_idx}:")
+        print(f"  a[{tensor_idx}] = {a_val}")
+        print(f"  b[{tensor_idx}] = {b_val}")
+        print(f"  Difference: {diff} (abs: {abs(diff)})")
         print()
 
 def main():

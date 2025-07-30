@@ -1,6 +1,6 @@
 import torch
 from torch.utils.cpp_extension import load_inline
-torch.manual_seed(0)
+# torch.manual_seed(1)
 
 # Read CUDA kernel from file
 def read_cuda_kernel(filename):
@@ -12,41 +12,43 @@ cuda_source = read_cuda_kernel('kernel.cu')
 
 # C++ function declarations
 cpp_source = '''
-torch::Tensor matmul_cuda(
+torch::Tensor linear_cuda(
     torch::Tensor A,
-    torch::Tensor B
+    torch::Tensor B,
+    torch::Tensor bias
 );
 '''
 
 # Load the CUDA extension
 matmul_forward = load_inline(
-    name='matmul_forward',
+    name='linear_forward',
     cpp_sources=cpp_source,
     cuda_sources=cuda_source,
-    functions=['matmul_cuda'],
+    functions=['linear_cuda'],
     with_cuda=True,
     extra_cuda_cflags=["-O3"],
     extra_cflags=["-O3"],
 )
-
 
 if __name__ == "__main__":
 
     M, N, K = 2 ** 8, 2 ** 8, 2 ** 8  # Dimensions for the matrix multiplication
     A = torch.randn([M, K]).cuda()
     B = torch.randn([K, N]).cuda()
-    gt = A @ B
+    bias = torch.randn([N]).cuda()
+    gt = A @ B + bias
 
     torch.save(A, 'matmul_a_input.pt')
     torch.save(B, 'matmul_b_input.pt')
-    torch.save(gt, 'matmul_output.pt')
+    torch.save(bias, 'matmul_bias_input.pt')
 
     # Generate anchors using CUDA
-    out = matmul_forward.matmul_cuda(
-        A, B
+    out = matmul_forward.linear_cuda(
+        A, B, bias
     )
 
     torch.save(out, 'matmul_output.pt')
+    torch.save(gt, 'groundtruth.pt')
     
     print(f"A  [:5]: {A.view(-1)[:5]}")
     print(f"A [-5:]: {A.view(-1)[-5:]}")

@@ -1,2 +1,5 @@
 # Calibratoin inputs
 *.pt
+
+# Compiled files
+*.out
